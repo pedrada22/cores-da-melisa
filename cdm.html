@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+
+    <title>CDM</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+
+  </head>
+  <body onload="init()">
+    <canvas id="canvasbg" width="400" height="480" style="position: absolute; z-index: 0">
+    </canvas>
+    <canvas id="canvas" width="400" height="480" style="position: absolute; z-index: 1">
+    </canvas>
+    
+  </body>
+</html>
+
+<script>
+	
+	
+	
+	//secao utilidade publica....
+	
+	var objetoTouchMethod = {};
+	
+	objetoTouchMethod.updateDirVel = function()//movimento de formiguinhas.
+	{
+	    this.direcaoGraus =  (Math.atan2((-this.posInicialY+this.y),(-this.posInicialX+this.x)))*(180/Math.PI);
+	    this.velocidade =  (Math.sqrt((this.x-this.posInicialX)*(this.x-this.posInicialX) +(this.y-this.posInicialY)*(this.y-this.posInicialY)))/((Date.now() - this.touchStartTime)/1000);
+	};
+	
+	objTouch = function ()
+	{
+		var results = {};
+		results.naTela = false;
+		results.x = 0;
+	    results.y = 0;
+	    results.h = 5;
+	    results.w = 5;
+	    results.velocidade = 0.0;
+	    results.direcaoGraus = 0.0;
+	    results.touchStartTime=0.0;
+	    results.posInicialX = -50;
+	    results.posInicialY = -50;
+	    results.previousTouchTime = 0.0;
+	    results.posAnteriorX = -50;
+	    results.posAnteriorY = -50;
+	    
+	    results.updateDirVel = objetoTouchMethod.updateDirVel;
+	    
+	    return results;
+	}
+	
+	function tocouObj(listaObjs,objetoTouch)//da forma que esta o unico objeto retornado eh o ultimo que for desenhado
+    {    // isso implica em passar uma listaObjs ordenada por ordem de desenho sendo que o ultimo desenhado eh o ultimo da lista. 
+		offset=0//serve para prover um gap
+		var listaColisoes = [];
+		var conf = false;
+		var j = objetoTouch;
+		//var listaPula = [];
+    	for (i in listaObjs)
+    	{
+    	    
+    	    
+    	    if (listaObjs[i].x < j.x + j.w &&
+            listaObjs[i].x + listaObjs[i].w > j.x &&
+            listaObjs[i].y < j.y + j.h &&
+            listaObjs[i].h + listaObjs[i].y > j.y)
+            {
+    	        listaColisoes = [listaObjs[i],j];
+    	        conf = true;
+    	    }
+            
+        }
+        return [conf,listaColisoes]
+    }
+	
+	//var global
+	var dedo = objTouch();
+	var touchX = 0;
+	var touchY = 0;
+	var mouseX,mouseY,mouseDown=0;
+
+	
+	//////algorithmo de achar objs em  listas...
+	//
+	//Array.prototype.contains = function(obj) {
+    //var i = this.length;
+    //while (i--) {
+    //    if (this[i] == obj) {
+    //        return true;
+    //    }
+    //}
+    //return false;
+    //}
+    
+    ///////outro mais completo algorithmo
+    var contains = function(needle) {
+    // Per spec, the way to identify NaN is that it is not equal to itself
+    var findNaN = needle !== needle;
+    var indexOf;
+
+    if(!findNaN && typeof Array.prototype.indexOf === 'function') {
+        indexOf = Array.prototype.indexOf;
+    } else {
+        indexOf = function(needle) {
+            var i = -1, index = -1;
+
+            for(i = 0; i < this.length; i++) {
+                var item = this[i];
+
+                if((findNaN && item !== item) || item === needle) {
+                    index = i;
+                    break;
+                }
+            }
+
+            return index;
+        };
+    }
+
+    return indexOf.call(this, needle) > -1;
+    };//http://stackoverflow.com/questions/7378228/check-if-an-element-is-present-in-an-array    - resposta no meio
+    
+	//////algorithmo de achar objs em listas FIM
+	
+	
+	
+	var imgsCarregadas = false;
+	
+	//Inicio objeto retangular..
+	var objetoRetMethod = {};
+	objetoRetMethod.caminho = 'nada';
+	//alert(objetoRetMethod.caminho);
+	objetoRetMethod.carregaImg = function(context1,img)
+	{
+	    //img = new Image();
+        this.img.onload = function(img){
+        // qualquer acao depois de carregar img 100%
+        //context1.drawImage(img,this.x,this.y,this.w,this.h);
+        imgsCarregadas = true;
+        };
+        this.img.src = this.figura;
+        //alert(this.figura);
+	};
+	
+	
+	objetoRetMethod.move = function(delta)//movimento de formiguinhas.
+	{
+	    this.x =  this.x + ((this.velocidade*Math.cos(-this.direcaoGraus*(Math.PI/180)))*(delta/1000));
+	    this.y =  this.y + ((this.velocidade*Math.sin(this.direcaoGraus*(Math.PI/180)))*(delta/1000));
+	};
+	
+	var objetoRet = function (w,h,figura){
+	    
+	    var results = {};
+	    results.img = new Image();
+	    results.x = -50;
+	    results.y = -50;
+	    results.w = w;
+	    results.h = h;
+	    results.velocidade = 100.0;
+	    results.direcaoGraus = 0.0;
+	    results.posInicialX = -50;
+	    results.posInicialY = -50;
+	    results.peso = 0.001;
+	    results.figura = figura;//'file:///C:/Repositorios/TowerDefenseCanvasClassic/indv.png';
+	    results.carregaImg = objetoRetMethod.carregaImg;
+	    results.move = objetoRetMethod.move;
+	    results.txtLivre = '';
+	    return results;
+	    
+	
+	//Fim objeto retangular..
+	    
+	};
+    //objetoColisaoCircular{}
+    var objetoCirc = {
+    	x:0,
+    	y:0,
+    	r:1,
+    	velocidade:10.0,
+    	direcaoGraus:90.0,
+    	peso:0.001,
+    	};
+    
+    function colisaoSimplesRetangulo(listaObjs)
+    {    
+		offset=0//serve para prover um gap
+		var listaColisoes = [];
+		var conf = false;
+		var listaPula = [];
+    	for (i in listaObjs)
+    	{
+    	    for (j in listaObjs)
+    	    {
+    	        if(i==j){continue}
+    	        if(contains.call(listaPula,''+j+''+i)){continue;}//colisao triangulo
+    	        if (listaObjs[i].x < listaObjs[j].x + listaObjs[j].w &&
+                listaObjs[i].x + listaObjs[i].w > listaObjs[j].x &&
+                listaObjs[i].y < listaObjs[j].y + listaObjs[j].h &&
+                listaObjs[i].h + listaObjs[i].y > listaObjs[j].y)
+                {
+    	            listaColisoes.push([listaObjs[i],listaObjs[j]]);
+    	            conf = true;
+    	            listaPula.push(''+i+''+j);
+    	        }
+            }
+        }
+        return [conf,listaColisoes]
+    }
+	
+	function colisaoSimplesTela(listaObjs,telaW,telaH)
+    {    
+		offset=0//serve para prover um gap
+		var listaColisoes = [];
+		var listaEixo = [];
+		var conf = false;
+		//var listaPula = [];
+		for (i in listaObjs)
+		{
+			//if(i==j){continue}
+			//if(contains.call(listaPula,''+i)){continue;}//colisao triangulo
+			if (listaObjs[i].x + listaObjs[i].w > telaW)
+			{
+				listaColisoes.push(listaObjs[i]);
+				listaEixo.push('xr');
+				conf = true;
+				continue;
+			}
+			if (listaObjs[i].x < 0)
+			{
+				listaColisoes.push(listaObjs[i]);
+				listaEixo.push('xl');
+				conf = true;
+				continue;
+			}
+			if (listaObjs[i].y + listaObjs[i].h > telaH)
+			{
+				listaColisoes.push(listaObjs[i]);
+				listaEixo.push('yd');
+				conf = true;
+				continue;
+			}
+			if (listaObjs[i].y < 0)
+			{
+				listaColisoes.push(listaObjs[i]);
+				listaEixo.push('yu');
+				conf = true;
+				continue;
+			}//listaPula.push(''+i);
+		}
+        return [conf,listaColisoes,listaEixo]
+    }
+	
+	function arredondaInt(somenum){
+	    //aseguir tecnica rapida com bitwise para transformar em num int
+        // With a bitwise or.
+        rounded = (0.5 + somenum) | 0;
+        // A double bitwise not.
+        rounded = ~~ (0.5 + somenum);
+        // Finally, a left bitwise shift.
+        rounded = (0.5 + somenum) << 0;
+        return rounded;
+        //acima tecnica rapida com bitwise para transformar em num int
+	}
+	
+	 // Keep track of the mouse button being pressed and draw a dot at current location
+    function sketchpad_mouseDown() {
+        mouseDown=1;
+		aleatorioPressMouse = Math.ceil(Math.random()*6)-1
+        //drawDot(context,mouseX,mouseY,12);
+    }
+	
+	var nomePng = ['Azul.png','Amarelo.png','Vermelho.png','Verde.png', 'Roxo.png','Laranja.png']
+	var aleatorioPressMouse = 0
+    // Keep track of the mouse button being released
+    function sketchpad_mouseUp() {
+        mouseDown=0;
+    }
+
+    // Keep track of the mouse position and draw a dot if mouse button is currently pressed
+    function canvasMouseMove(e) { 
+        // Update the mouse co-ordinates when moved
+        getMousePos(e);
+
+	    var Azul = objetoRet(30,30,nomePng[aleatorioPressMouse]);
+		Azul.direcaoGraus = 360*Math.random();
+	    Azul.x = mouseX;
+	    Azul.y = mouseY;
+	    //Azul.posInicialX = touchX;
+	    //Azul.posInicialY = touchY;
+	    Azul.carregaImg(context);
+	    
+	    listaDeObjs.push(Azul);    
+        totalObjs = totalObjs+1;
+        if (totalObjs > maxObjs)
+        {
+			listaDeObjs.shift();//remove o primeiro elemento
+			totalObjs = totalObjs-1;
+		}
+        
+    }
+
+    // Get the current mouse position relative to the top-left of the canvas
+    function getMousePos(e) {
+        if (!e)
+            var e = event;
+
+        if (e.offsetX) {
+            mouseX = e.offsetX;
+            mouseY = e.offsetY;
+        }
+        else if (e.layerX) {
+            mouseX = e.layerX;
+            mouseY = e.layerY;
+        }
+     }
+	
+	// Draw something when a touch start is detected
+    function canvasTouchStart() {
+		dedo = objTouch();
+        // Update the touch co-ordinates
+        getTouchPos();
+
+        //drawDot(ctx,touchX,touchY,12);
+        
+        dedo.x=touchX;
+        dedo.y=touchY;
+        //dedo.updateDirVel();
+		dedo.posInicialX = touchX;
+		dedo.posInicialY = touchY;
+		dedo.posAnteriorX = touchX;
+	    dedo.posAnteriorY = touchY;
+	    dedo.touchStartTime=Date.now();
+	    dedo.previousTouchTime = Date.now();
+	    //dedo.updateDirVel();
+	    
+        // Prevents an additional mousedown event being triggered
+        event.preventDefault();
+    }
+
+    // Draw something and prevent the default scrolling when touch movement is detected
+    function canvasTouchMove(e) { 
+        // Update the touch co-ordinates
+        getTouchPos(e);
+        
+        // During a touchmove event, unlike a mousemove event, we don't need to check if the touch is engaged, since there will always be contact with the screen by definition.
+        //drawDot(ctx,touchX,touchY,12); 
+        
+		
+	    dedo.x=touchX;
+        dedo.y=touchY;
+        dedo.updateDirVel();
+        dedo.previousTouchTime = Date.now();
+	    dedo.posAnteriorX = touchX;
+	    dedo.posAnteriorY = touchY;
+		
+		var laranja = objetoRet(30,30,'Laranja.png');
+		laranja.direcaoGraus = 360*Math.random();
+	    laranja.x = touchX;
+	    laranja.y = touchY;
+	    laranja.posInicialX = touchX;
+	    laranja.posInicialY = touchY;
+	    laranja.carregaImg(context);
+	    
+	    listaDeObjs.push(laranja);    
+        totalObjs = totalObjs+1;
+        if (totalObjs > maxObjs)
+        {
+			listaDeObjs.shift();//remove o primeiro elemento
+			totalObjs = totalObjs-1;
+		}
+        
+        // Prevent a scrolling action as a result of this touchmove triggering.
+        event.preventDefault();
+        
+	    
+	}
+	var dirFinal = 0;
+	var velFinal = 0;
+	
+	function canvasTouchEnd (e) { 
+        // Update the touch co-ordinates
+        getTouchPos(e);
+
+        // During a touchmove event, unlike a mousemove event, we don't need to check if the touch is engaged, since there will always be contact with the screen by definition.
+        //drawDot(ctx,touchX,touchY,12); 
+        
+		
+	    
+	    dedo.x=touchX;
+        dedo.y=touchY;
+        dedo.updateDirVel();
+        dedo.previousTouchTime = Date.now();
+	    dedo.posAnteriorX = touchX;
+	    dedo.posAnteriorY = touchY;
+
+	    dirFinal = dedo.direcaoGraus;
+	    velFinal = dedo.velocidade;
+	    
+	    dedo.x=-10;
+        dedo.y=-10;
+        // Prevent a scrolling action as a result of this touchmove triggering.
+        event.preventDefault();
+    }
+	
+    // Get the touch position relative to the top-left of the canvas
+    // When we get the raw values of pageX and pageY below, they take into account the scrolling on the page
+    // but not the position relative to our target div. We'll adjust them using "target.offsetLeft" and
+    // "target.offsetTop" to get the correct values in relation to the top left of the canvas.
+    function getTouchPos(e) {
+        if (!e)
+            var e = event;
+
+        if(e.touches) {
+            if (e.touches.length == 1) { // Only deal with one finger
+                var touch = e.touches[0]; // Get the information for finger #1
+                touchX=touch.pageX-touch.target.offsetLeft;
+                touchY=touch.pageY-touch.target.offsetTop;
+            }
+        }
+    }
+	
+	var canvas = [];
+	var context = [];
+	var canvasBg = [];
+	var contextBg = [];
+	var canvasHUD = [];
+	var contextHUD = [];
+	var tamanhoCanvasHUDH = 0;
+	var tamanhoCanvasHUDW = 0;
+	var tamanhoCanvasFgH  = 0;
+	var tamanhoCanvasFgW = 0;
+	var tamanhoCanvasBgH = 0;
+	var tamanhoCanvasBgW = 0;
+	var totalObjs = 0;
+	var maxObjs = 20;
+	
+	function init ()
+	{
+		canvas = document.getElementById("canvas");
+		if (canvas.getContext){context = canvas.getContext("2d")};
+		
+		canvasBg = document.getElementById("canvasbg");
+		if (canvas.getContext){contextBg = canvasBg.getContext("2d")};
+		
+		canvasHUD = document.getElementById("canvasHUD");
+		if (canvas.getContext){contextHUD = canvasBg.getContext("2d")};
+		
+		
+		// React to mouse events on the canvas, and mouseup on the entire document
+		canvas.addEventListener('mousedown', sketchpad_mouseDown, false);
+		canvas.addEventListener('mousemove', canvasMouseMove, false);
+		window.addEventListener('mouseup', sketchpad_mouseUp, false);
+		
+		// React to touch events on the canvas
+		canvas.addEventListener('touchstart', canvasTouchStart, false);
+		canvas.addEventListener('touchmove', canvasTouchMove, false);
+		canvas.addEventListener("touchend",canvasTouchEnd, false);
+		
+		tamanhoCanvasHUDH = contextHUD.canvas.clientHeight
+		tamanhoCanvasHUDW = contextHUD.canvas.clientWidth
+		
+		tamanhoCanvasFgH = context.canvas.clientHeight
+		tamanhoCanvasFgW = context.canvas.clientWidth
+		
+		tamanhoCanvasBgH = contextBg.canvas.clientHeight
+		tamanhoCanvasBgW = contextBg.canvas.clientWidth
+	
+	    //seta bg...
+	    var imgbg = new Image();
+        imgbg.onload = function(){
+        //qualquer acao depois de carregar img 100%
+            contextBg.drawImage(imgbg,0,0,tamanhoCanvasBgW,tamanhoCanvasBgH);
+        };
+        imgbg.src = 'Background.png';
+        //seta bg fim
+        render();
+	}
+	
+	//secao utilidade publica....
+	
+	
+	
+    var colisaoResult = [];
+    var firstRender = Date.now();
+    var presentTime = Date.now();
+    var lastRender = Date.now();
+    var delta = 0;
+    var listaDeObjs = [];
+    var colisaoTelaResult=[];
+    
+    function render() {
+      context.clearRect(0,0,tamanhoCanvasFgW,tamanhoCanvasFgH) //devera limpar o quadro completo, neste caso o foreground. 
+      
+      presentTime = Date.now() - firstRender;
+      delta = Date.now() - lastRender;
+      lastRender = Date.now();
+      
+      colisaoTelaResult = colisaoSimplesTela(listaDeObjs,tamanhoCanvasFgW,tamanhoCanvasFgH);
+      objTocadoResult = tocouObj(listaDeObjs,dedo);
+      
+      if (objTocadoResult[0])//toque dos dedos
+      {
+		  
+		  //alert('touch');
+	      //alert(objTocadoResult[1][1].direcaoGraus);
+	      //objTocadoResult[1][0].direcaoGraus = dirFinal;
+	      //objTocadoResult[1][0].velocidade = velFinal;
+	  }                                      
+      if (colisaoTelaResult[0])//colisao com tela.
+      {
+	      
+	      for (k in colisaoTelaResult[1])
+	      {
+			colisaoTelaResult[1][k].posInicialX = colisaoTelaResult[1][k].x
+			colisaoTelaResult[1][k].posInicialY = colisaoTelaResult[1][k].y
+			if (colisaoTelaResult[2][k] == 'xr' || colisaoTelaResult[2][k] == 'xl')
+			{
+				colisaoTelaResult[1][k].direcaoGraus = ((-colisaoTelaResult[1][k].direcaoGraus)+180)%360;//-(colisaoTelaResult[1][k].direcaoGraus);//poderi ser +180 ou -180 ou valor+180mod360...
+			}
+			if (colisaoTelaResult[2][k] == 'yu' || colisaoTelaResult[2][k] == 'yd')
+			{
+				colisaoTelaResult[1][k].direcaoGraus = -colisaoTelaResult[1][k].direcaoGraus;//-(colisaoTelaResult[1][k].direcaoGraus);//poderi ser +180 ou -180 ou valor+180mod360...
+			}
+			//reseta posicao...
+			if (colisaoTelaResult[2][k] == 'xr')
+			{
+			    colisaoTelaResult[1][k].x = tamanhoCanvasFgW-colisaoTelaResult[1][k].w;
+			}
+			if (colisaoTelaResult[2][k] == 'xl')
+			{
+			    colisaoTelaResult[1][k].x = 0;
+			}
+			if (colisaoTelaResult[2][k] == 'yu')
+			{
+			    colisaoTelaResult[1][k].y = 0;
+			}
+			if (colisaoTelaResult[2][k] == 'yd')
+			{
+			    colisaoTelaResult[1][k].y = tamanhoCanvasFgH-colisaoTelaResult[1][k].h;
+			}
+			//colisaoTelaResult[1][k].direcaoGraus = ((-colisaoTelaResult[1][k].direcaoGraus)+180)%360;//-(colisaoTelaResult[1][k].direcaoGraus);//poderi ser +180 ou -180 ou valor+180mod360...
+			//colisaoTelaResult[1][k].direcaoGraus = (colisaoTelaResult[1][k].direcaoGraus+180)%360;//-(colisaoTelaResult[1][k].direcaoGraus);//poderi ser +180 ou -180 ou valor+180mod360...
+		  }
+	  }
+      
+      i=0;
+      while(i<totalObjs)
+      {
+		listaDeObjs[i].move(delta)
+		
+		 if (imgsCarregadas){
+             context.drawImage(listaDeObjs[i].img,listaDeObjs[i].x,listaDeObjs[i].y,listaDeObjs[i].w,listaDeObjs[i].h);
+         }
+		 i++;
+	  }
+      
+      requestAnimationFrame(render);
+      
+    }
+    //render();
+    
+    
+</script>
+    
