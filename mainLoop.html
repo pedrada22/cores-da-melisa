@@ -77,26 +77,22 @@
         return [conf,listaColisoes]
     }
 
-	//var global
+	//var global	//var global	//var global	//var global	//var global	//var global	//var global
 	var dedo = objTouch();
 	var touchX = 0;
 	var touchY = 0;
 	var mouseX,mouseY,mouseDown=0;
+    var colisaoResult = [];
+    var firstRender = Date.now();
+    var presentTime = Date.now();
+    var lastRender = Date.now();
+    var delta = 0;
+    var listaDeObjs = [];
+    var colisaoTelaResult=[];
+	//var global	//var global	//var global	//var global	//var global	//var global	//var global
 
 
-	//////algorithmo de achar objs em  listas...
-	//
-	//Array.prototype.contains = function(obj) {
-    //var i = this.length;
-    //while (i--) {
-    //    if (this[i] == obj) {
-    //        return true;
-    //    }
-    //}
-    //return false;
-    //}
-
-    ///////outro mais completo algorithmo
+	//////algorithmo de achar objs em listas INICIO
     var contains = function(needle) {
     // Per spec, the way to identify NaN is that it is not equal to itself
     var findNaN = needle !== needle;
@@ -130,7 +126,16 @@
 
 
 
+//objeto forca para gravidade e afins. INICIO/////////////////
+var objetoForca = function (direcao,intencidade){
 
+    var results = {};
+    results.direcaoGraus = direcao;
+    results.intencidade = intencidade;
+    return results;
+};
+var grav = objetoForca(270,100);
+//objeto forca para gravidade e afins. FIM////////////////////
 
 
 //#####################################################CIRCULO!!!!!!!INICIO
@@ -207,8 +212,22 @@ var objetoCirculo = function (r,figura){
 
 	objetoRetMethod.move = function(delta)//movimento de formiguinhas.
 	{
-	    this.x =  this.x + ((this.velocidade*Math.cos(-this.direcaoGraus*(Math.PI/180)))*(delta/1000));
-	    this.y =  this.y + ((this.velocidade*Math.sin(this.direcaoGraus*(Math.PI/180)))*(delta/1000));
+        //fazendo gravidade para ver como fica...INICIO
+        vecX = this.velocidade*Math.cos(-this.direcaoGraus*(Math.PI/180));
+        vecY = this.velocidade*Math.sin(this.direcaoGraus*(Math.PI/180));
+        gravVecX = grav.intencidade*Math.cos(-grav.direcaoGraus*(Math.PI/180));
+        gravVecY = grav.intencidade*Math.sin(grav.direcaoGraus*(Math.PI/180));
+        resultVecX = vecX+gravVecX;
+        resultVecY = vecY+gravVecY;
+        resultDirecao = (Math.atan2(resultVecX,resultVecY))*(180/Math.PI);
+        resultVelocidade = (Math.sqrt((resultVecX*resultVecX) +(resultVecY*resultVecY)));
+
+        this.x =  this.x + resultVecX*(delta/1000);
+        this.y =  this.y + resultVecY*(delta/1000);
+        //fazendo gravidade para ver como fica...Fim
+
+        //this.x =  this.x + ((resultVelocidade*Math.cos(-resultDirecao*(Math.PI/180)))*(delta/1000));
+        //this.y =  this.y + ((resultVelocidade*Math.sin(resultDirecao*(Math.PI/180)))*(delta/1000));
 	};
 
 	var objetoRet = function (w,h,figura){
@@ -247,15 +266,22 @@ var objetoCirculo = function (r,figura){
     	    {
     	        if(i==j){continue}
     	        if(contains.call(listaPula,''+j+''+i)){continue;}//colisao triangulo
-    	        if (listaObjs[i].x < listaObjs[j].x + listaObjs[j].w &&
-                listaObjs[i].x + listaObjs[i].w > listaObjs[j].x &&
-                listaObjs[i].y < listaObjs[j].y + listaObjs[j].h &&
-                listaObjs[i].h + listaObjs[i].y > listaObjs[j].y)
+    	        if (listaObjs[i].x < listaObjs[j].x + listaObjs[j].w)
                 {
-    	            listaColisoes.push([listaObjs[i],listaObjs[j]]);
-    	            conf = true;
-    	            listaPula.push(''+i+''+j);
-    	        }
+                    if (listaObjs[i].x + listaObjs[i].w > listaObjs[j].x)
+                    {
+                        if (listaObjs[i].y < listaObjs[j].y + listaObjs[j].h)
+                        {
+                            if (listaObjs[i].h + listaObjs[i].y > listaObjs[j].y)
+                            {
+                                listaColisoes.push([listaObjs[i],listaObjs[j]]);
+                                conf = true;
+                                listaPula.push(''+i+''+j);
+
+                            }
+                        }
+                    }
+                }
             }
         }
         return [conf,listaColisoes]
@@ -558,13 +584,7 @@ var objetoCirculo = function (r,figura){
 
 
 
-    var colisaoResult = [];
-    var firstRender = Date.now();
-    var presentTime = Date.now();
-    var lastRender = Date.now();
-    var delta = 0;
-    var listaDeObjs = [];
-    var colisaoTelaResult=[];
+
 
     function render() {
       context.clearRect(0,0,tamanhoCanvasFgW,tamanhoCanvasFgH) //devera limpar o quadro completo, neste caso o foreground.
@@ -594,10 +614,12 @@ var objetoCirculo = function (r,figura){
 			if (colisaoTelaResult[2][k] == 'xr' || colisaoTelaResult[2][k] == 'xl')
 			{
 				colisaoTelaResult[1][k].direcaoGraus = ((-colisaoTelaResult[1][k].direcaoGraus)+180)%360;//-(colisaoTelaResult[1][k].direcaoGraus);//poderi ser +180 ou -180 ou valor+180mod360...
+                colisaoTelaResult[1][k].velocidade = colisaoTelaResult[1][k].velocidade - (colisaoTelaResult[1][k].velocidade/2)
 			}
 			if (colisaoTelaResult[2][k] == 'yu' || colisaoTelaResult[2][k] == 'yd')
 			{
 				colisaoTelaResult[1][k].direcaoGraus = -colisaoTelaResult[1][k].direcaoGraus;//-(colisaoTelaResult[1][k].direcaoGraus);//poderi ser +180 ou -180 ou valor+180mod360...
+                colisaoTelaResult[1][k].velocidade = colisaoTelaResult[1][k].velocidade - (colisaoTelaResult[1][k].velocidade/2)
 			}
 			//reseta posicao...
 			if (colisaoTelaResult[2][k] == 'xr')
