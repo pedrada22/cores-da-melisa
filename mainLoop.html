@@ -134,7 +134,7 @@ var objetoForca = function (direcao,intencidade){
     results.intencidade = intencidade;
     return results;
 };
-var grav = objetoForca(270,100);
+var grav = objetoForca(270,10);
 //objeto forca para gravidade e afins. FIM////////////////////
 
 
@@ -159,8 +159,8 @@ objetoCirculoMethod.carregaImg = function(context1,img)
 
 objetoCirculoMethod.move = function(delta)//movimento de formiguinhas.
 {
-    this.x =  this.x + ((this.velocidade*Math.cos(-this.direcaoGraus*(Math.PI/180)))*(delta/1000));
-    this.y =  this.y + ((this.velocidade*Math.sin(this.direcaoGraus*(Math.PI/180)))*(delta/1000));
+    this.x =  this.x + ((this.velocidade*Math.cos(this.direcaoGraus*(Math.PI/180)))*(delta/1000));
+    this.y =  this.y + ((this.velocidade*Math.sin(-this.direcaoGraus*(Math.PI/180)))*(delta/1000));
 };
 
 var objetoCirculo = function (r,figura){
@@ -209,21 +209,38 @@ var objetoCirculo = function (r,figura){
         //alert(this.figura);
 	};
 
-
+  var max = 100;
 	objetoRetMethod.move = function(delta)//movimento de formiguinhas.
 	{
         //fazendo gravidade para ver como fica...INICIO
-        vecX = this.velocidade*Math.cos(-this.direcaoGraus*(Math.PI/180));
-        vecY = this.velocidade*Math.sin(this.direcaoGraus*(Math.PI/180));
-        gravVecX = grav.intencidade*Math.cos(-grav.direcaoGraus*(Math.PI/180));
-        gravVecY = grav.intencidade*Math.sin(grav.direcaoGraus*(Math.PI/180));
-        resultVecX = vecX+gravVecX;
-        resultVecY = vecY+gravVecY;
-        resultDirecao = (Math.atan2(resultVecX,resultVecY))*(180/Math.PI);
-        resultVelocidade = (Math.sqrt((resultVecX*resultVecX) +(resultVecY*resultVecY)));
-
-        this.x =  this.x + resultVecX*(delta/1000);
-        this.y =  this.y + resultVecY*(delta/1000);
+        var vecX = this.velocidade*Math.cos(this.direcaoGraus*(Math.PI/180));
+        var vecY = this.velocidade*Math.sin(this.direcaoGraus*(Math.PI/180));
+        var gravVecX = grav.intencidade*Math.cos(grav.direcaoGraus*(Math.PI/180));
+        var gravVecY = grav.intencidade*Math.sin(grav.direcaoGraus*(Math.PI/180));
+        var resultVecX = vecX+gravVecX;
+        var resultVecY = vecY+gravVecY;
+        var resultDirecao = (Math.atan2(resultVecY,resultVecX))*(180/Math.PI);
+        var resultVelocidade = (Math.sqrt((resultVecX*resultVecX) +(resultVecY*resultVecY)));
+        this.velocidade = resultVelocidade;
+        this.direcaoGraus = resultDirecao;
+        if (max > 0)
+        {
+          console.log("velocidade: "+this.velocidade);
+          console.log("direcaoGraus: "+this.direcaoGraus);
+          console.log("intencidade: "+grav.intencidade);
+          console.log("GRAV direcaoGraus: "+grav.direcaoGraus);
+          console.log("vecY: "+vecY);
+          console.log("gravVecX: "+gravVecX);
+          console.log("gravVecY: "+gravVecY);
+          console.log("resultVecX: "+resultVecX);
+          console.log("resultVecY: "+resultVecY);
+          console.log("resultDirecao: "+resultDirecao);
+          console.log("resultVelocidade: "+resultVelocidade);
+          console.log("nda");
+          max = max -1;
+        }
+        this.x =  this.x + ((resultVelocidade*Math.cos(resultDirecao*(Math.PI/180)))*(delta/1000));
+        this.y =  this.y + ((resultVelocidade*Math.sin(-resultDirecao*(Math.PI/180)))*(delta/1000));
         //fazendo gravidade para ver como fica...Fim
 
         //this.x =  this.x + ((resultVelocidade*Math.cos(-resultDirecao*(Math.PI/180)))*(delta/1000));
@@ -369,8 +386,21 @@ var objetoCirculo = function (r,figura){
 	 // Keep track of the mouse button being pressed and draw a dot at current location
     function sketchpad_mouseDown() {
         mouseDown=1;
-		aleatorioPressMouse = Math.ceil(Math.random()*6)-1;
+		    aleatorioPressMouse = Math.ceil(Math.random()*6)-1;
         //drawDot(context,mouseX,mouseY,12);
+        var Azul = objetoRet(30,30,nomePng[aleatorioPressMouse]);
+        Azul.direcaoGraus = 91;
+        Azul.x = mouseX;
+  	    Azul.y = mouseY;
+        Azul.carregaImg(context);
+        listaDeObjs.push(Azul);
+        totalObjs = totalObjs+1;
+        if (totalObjs > maxObjs)
+        {
+  			    listaDeObjs.shift();//remove o primeiro elemento
+  			    totalObjs = totalObjs-1;
+  		  }
+
     }
 
 	var nomePng = ['src/Azul.png','src/Amarelo.png','src/Vermelho.png','src/Verde.png', 'src/Roxo.png','src/Laranja.png'];
@@ -385,21 +415,21 @@ var objetoCirculo = function (r,figura){
         // Update the mouse co-ordinates when moved
         getMousePos(e);
 
-	    var Azul = objetoRet(30,30,nomePng[aleatorioPressMouse]);
-		Azul.direcaoGraus = 360*Math.random();
-	    Azul.x = mouseX;
-	    Azul.y = mouseY;
+      //var Azul = objetoRet(30,30,nomePng[aleatorioPressMouse]);
+      //Azul.direcaoGraus = 360*Math.random();
+	    //Azul.x = mouseX;
+	    //Azul.y = mouseY;
 	    //Azul.posInicialX = touchX;
 	    //Azul.posInicialY = touchY;
-	    Azul.carregaImg(context);
+	    //Azul.carregaImg(context);
 
-	    listaDeObjs.push(Azul);
-        totalObjs = totalObjs+1;
-        if (totalObjs > maxObjs)
-        {
-			listaDeObjs.shift();//remove o primeiro elemento
-			totalObjs = totalObjs-1;
-		}
+	    //listaDeObjs.push(Azul);
+      //  totalObjs = totalObjs+1;
+      //  if (totalObjs > maxObjs)
+      //  {
+			//listaDeObjs.shift();//remove o primeiro elemento
+			//totalObjs = totalObjs-1;
+		  //}
 
     }
 
@@ -457,7 +487,7 @@ var objetoCirculo = function (r,figura){
 	    dedo.posAnteriorX = touchX;
 	    dedo.posAnteriorY = touchY;
 
-		var laranja = objetoRet(30,30,'Laranja.png');
+		var laranja = objetoRet(30,30,'src/Laranja.png');
 		laranja.direcaoGraus = 360*Math.random();
 	    laranja.x = touchX;
 	    laranja.y = touchY;
@@ -614,29 +644,29 @@ var objetoCirculo = function (r,figura){
 			if (colisaoTelaResult[2][k] == 'xr' || colisaoTelaResult[2][k] == 'xl')
 			{
 				colisaoTelaResult[1][k].direcaoGraus = ((-colisaoTelaResult[1][k].direcaoGraus)+180)%360;//-(colisaoTelaResult[1][k].direcaoGraus);//poderi ser +180 ou -180 ou valor+180mod360...
-                colisaoTelaResult[1][k].velocidade = colisaoTelaResult[1][k].velocidade - (colisaoTelaResult[1][k].velocidade/2)
+                //colisaoTelaResult[1][k].velocidade = colisaoTelaResult[1][k].velocidade - (colisaoTelaResult[1][k].velocidade/2)
 			}
 			if (colisaoTelaResult[2][k] == 'yu' || colisaoTelaResult[2][k] == 'yd')
 			{
-				colisaoTelaResult[1][k].direcaoGraus = -colisaoTelaResult[1][k].direcaoGraus;//-(colisaoTelaResult[1][k].direcaoGraus);//poderi ser +180 ou -180 ou valor+180mod360...
-                colisaoTelaResult[1][k].velocidade = colisaoTelaResult[1][k].velocidade - (colisaoTelaResult[1][k].velocidade/2)
+				colisaoTelaResult[1][k].direcaoGraus = (-colisaoTelaResult[1][k].direcaoGraus);//-(colisaoTelaResult[1][k].direcaoGraus);//poderi ser +180 ou -180 ou valor+180mod360...
+                //colisaoTelaResult[1][k].velocidade = colisaoTelaResult[1][k].velocidade - (colisaoTelaResult[1][k].velocidade/2)
 			}
 			//reseta posicao...
 			if (colisaoTelaResult[2][k] == 'xr')
 			{
-			    colisaoTelaResult[1][k].x = tamanhoCanvasFgW-colisaoTelaResult[1][k].w;
+			    colisaoTelaResult[1][k].x = tamanhoCanvasFgW-colisaoTelaResult[1][k].w - 1;
 			}
 			if (colisaoTelaResult[2][k] == 'xl')
 			{
-			    colisaoTelaResult[1][k].x = 0;
+			    colisaoTelaResult[1][k].x = 1;
 			}
 			if (colisaoTelaResult[2][k] == 'yu')
 			{
-			    colisaoTelaResult[1][k].y = 0;
+			    colisaoTelaResult[1][k].y = 1;
 			}
 			if (colisaoTelaResult[2][k] == 'yd')
 			{
-			    colisaoTelaResult[1][k].y = tamanhoCanvasFgH-colisaoTelaResult[1][k].h;
+			    colisaoTelaResult[1][k].y = tamanhoCanvasFgH-colisaoTelaResult[1][k].h -1;
 			}
 			//colisaoTelaResult[1][k].direcaoGraus = ((-colisaoTelaResult[1][k].direcaoGraus)+180)%360;//-(colisaoTelaResult[1][k].direcaoGraus);//poderi ser +180 ou -180 ou valor+180mod360...
 			//colisaoTelaResult[1][k].direcaoGraus = (colisaoTelaResult[1][k].direcaoGraus+180)%360;//-(colisaoTelaResult[1][k].direcaoGraus);//poderi ser +180 ou -180 ou valor+180mod360...
