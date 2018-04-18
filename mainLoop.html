@@ -9,11 +9,23 @@
 
   </head>
   <body onload="init()">
-    <canvas id="canvasbg" width="400" height="480" style="position: absolute; z-index: 0">
-    </canvas>
-    <canvas id="canvas" width="400" height="480" style="position: absolute; z-index: 1">
-    </canvas>
-
+    <table>
+        <tr>
+            <td>
+                <br>
+                Gravidade: <input type = "text" id="gravForceInput"/>
+                Direcao(Em graus): <input type = "text" id="gravDirectionInput"/>
+                <input type="button" onclick="updateForcaG()" value="Alterar G"/>
+                <br>
+            </td>
+            <td>
+                <canvas id="canvasbg" width="400" height="480" style="position: absolute; z-index: 0">
+                </canvas>
+                <canvas id="canvas" width="400" height="480" style="position: absolute; z-index: 1">
+                </canvas>
+            </td>
+        </tr>
+    </table>
   </body>
 </html>
 
@@ -122,7 +134,17 @@
 
 	//////algorithmo de achar objs em listas FIM
 
+//obj explosao
+var objetoExplosao = function (alcanceRaio,intencidade){
 
+    var results = {};
+    results.x
+    results.y
+    results.alcanceRaio = alcanceRaio;
+    results.intencidade = intencidade;
+    return results;
+};
+var chakaBum = objetoExplosao(50,30);
 
 
 
@@ -134,10 +156,14 @@ var objetoForca = function (direcao,intencidade){
     results.intencidade = intencidade;
     return results;
 };
-var grav = objetoForca(270,10);
+var grav = objetoForca(280,10);
 //objeto forca para gravidade e afins. FIM////////////////////
 
-
+function updateForcaG()
+{
+    grav.direcaoGraus = parseFloat(document.getElementById('gravDirectionInput').value);
+    grav.intencidade = parseFloat(document.getElementById('gravForceInput').value);
+}
 //#####################################################CIRCULO!!!!!!!INICIO
 
 var objetoCirculoMethod = {};
@@ -174,7 +200,7 @@ var objetoCirculo = function (r,figura){
     results.w = 2*r;
     results.cx = results.x+r;
     results.cy = results.y+r;
-    results.velocidade = 100.0;
+    results.velocidade = 1.0;
     results.direcaoGraus = 0.0;
     results.posInicialX = -50;
     results.posInicialY = -50;
@@ -209,7 +235,7 @@ var objetoCirculo = function (r,figura){
         //alert(this.figura);
 	};
 
-  var max = 100;
+  var max = -1;
 	objetoRetMethod.move = function(delta)//movimento de formiguinhas.
 	{
         //fazendo gravidade para ver como fica...INICIO
@@ -241,7 +267,10 @@ var objetoCirculo = function (r,figura){
         }
         this.x =  this.x + ((resultVelocidade*Math.cos(resultDirecao*(Math.PI/180)))*(delta/1000));
         this.y =  this.y + ((resultVelocidade*Math.sin(-resultDirecao*(Math.PI/180)))*(delta/1000));
+
         //fazendo gravidade para ver como fica...Fim
+
+        //TODO Travar velocidades abaixo de 0.67 para 0
 
         //this.x =  this.x + ((resultVelocidade*Math.cos(-resultDirecao*(Math.PI/180)))*(delta/1000));
         //this.y =  this.y + ((resultVelocidade*Math.sin(resultDirecao*(Math.PI/180)))*(delta/1000));
@@ -255,7 +284,7 @@ var objetoCirculo = function (r,figura){
 	    results.y = -50;
 	    results.w = w;
 	    results.h = h;
-	    results.velocidade = 100.0;
+	    results.velocidade = 1.0;
 	    results.direcaoGraus = 0.0;
 	    results.posInicialX = -50;
 	    results.posInicialY = -50;
@@ -644,30 +673,34 @@ var objetoCirculo = function (r,figura){
 			if (colisaoTelaResult[2][k] == 'xr' || colisaoTelaResult[2][k] == 'xl')
 			{
 				colisaoTelaResult[1][k].direcaoGraus = ((-colisaoTelaResult[1][k].direcaoGraus)+180)%360;//-(colisaoTelaResult[1][k].direcaoGraus);//poderi ser +180 ou -180 ou valor+180mod360...
-                //colisaoTelaResult[1][k].velocidade = colisaoTelaResult[1][k].velocidade - (colisaoTelaResult[1][k].velocidade/2)
+                colisaoTelaResult[1][k].velocidade = colisaoTelaResult[1][k].velocidade - (colisaoTelaResult[1][k].velocidade/2)
 			}
 			if (colisaoTelaResult[2][k] == 'yu' || colisaoTelaResult[2][k] == 'yd')
 			{
-				colisaoTelaResult[1][k].direcaoGraus = (-colisaoTelaResult[1][k].direcaoGraus);//-(colisaoTelaResult[1][k].direcaoGraus);//poderi ser +180 ou -180 ou valor+180mod360...
-                //colisaoTelaResult[1][k].velocidade = colisaoTelaResult[1][k].velocidade - (colisaoTelaResult[1][k].velocidade/2)
+				colisaoTelaResult[1][k].direcaoGraus = (-colisaoTelaResult[1][k].direcaoGraus)%360;//-(colisaoTelaResult[1][k].direcaoGraus);//poderi ser +180 ou -180 ou valor+180mod360...
+                colisaoTelaResult[1][k].velocidade = colisaoTelaResult[1][k].velocidade - (colisaoTelaResult[1][k].velocidade/2)
 			}
 			//reseta posicao...
 			if (colisaoTelaResult[2][k] == 'xr')
 			{
-			    colisaoTelaResult[1][k].x = tamanhoCanvasFgW-colisaoTelaResult[1][k].w - 1;
+			    colisaoTelaResult[1][k].x = tamanhoCanvasFgW-colisaoTelaResult[1][k].w;
 			}
-			if (colisaoTelaResult[2][k] == 'xl')
+			else if(colisaoTelaResult[2][k] == 'xl')
 			{
-			    colisaoTelaResult[1][k].x = 1;
+			    colisaoTelaResult[1][k].x = 0;
 			}
-			if (colisaoTelaResult[2][k] == 'yu')
+			else if (colisaoTelaResult[2][k] == 'yu')
 			{
-			    colisaoTelaResult[1][k].y = 1;
+			    colisaoTelaResult[1][k].y = 0;
 			}
-			if (colisaoTelaResult[2][k] == 'yd')
+			else if (colisaoTelaResult[2][k] == 'yd')
 			{
-			    colisaoTelaResult[1][k].y = tamanhoCanvasFgH-colisaoTelaResult[1][k].h -1;
+			    colisaoTelaResult[1][k].y = tamanhoCanvasFgH-colisaoTelaResult[1][k].h;
 			}
+            else
+            {
+                alert("DOOM! " + colisaoTelaResult[2][k]);
+            }
 			//colisaoTelaResult[1][k].direcaoGraus = ((-colisaoTelaResult[1][k].direcaoGraus)+180)%360;//-(colisaoTelaResult[1][k].direcaoGraus);//poderi ser +180 ou -180 ou valor+180mod360...
 			//colisaoTelaResult[1][k].direcaoGraus = (colisaoTelaResult[1][k].direcaoGraus+180)%360;//-(colisaoTelaResult[1][k].direcaoGraus);//poderi ser +180 ou -180 ou valor+180mod360...
 		  }
