@@ -100,6 +100,7 @@
     var lastRender = Date.now();
     var delta = 0;
     var listaDeObjs = [];
+    var listaDeCirculos = [];
     var colisaoTelaResult=[];
 	//var global	//var global	//var global	//var global	//var global	//var global	//var global
 
@@ -185,8 +186,24 @@ objetoCirculoMethod.carregaImg = function(context1,img)
 
 objetoCirculoMethod.move = function(delta)//movimento de formiguinhas.
 {
-    this.x =  this.x + ((this.velocidade*Math.cos(this.direcaoGraus*(Math.PI/180)))*(delta/1000));
-    this.y =  this.y + ((this.velocidade*Math.sin(-this.direcaoGraus*(Math.PI/180)))*(delta/1000));
+    //this.x =  this.x + ((this.velocidade*Math.cos(this.direcaoGraus*(Math.PI/180)))*(delta/1000));
+    //this.y =  this.y + ((this.velocidade*Math.sin(-this.direcaoGraus*(Math.PI/180)))*(delta/1000));
+
+    var vecX = this.velocidade*Math.cos(this.direcaoGraus*(Math.PI/180));
+    var vecY = this.velocidade*Math.sin(this.direcaoGraus*(Math.PI/180));
+    var gravVecX = grav.intencidade*Math.cos(grav.direcaoGraus*(Math.PI/180));
+    var gravVecY = grav.intencidade*Math.sin(grav.direcaoGraus*(Math.PI/180));
+    var resultVecX = vecX+gravVecX;
+    var resultVecY = vecY+gravVecY;
+    var resultDirecao = (Math.atan2(resultVecY,resultVecX))*(180/Math.PI);
+    var resultVelocidade = (Math.sqrt((resultVecX*resultVecX) +(resultVecY*resultVecY)));
+    this.velocidade = resultVelocidade;
+    this.direcaoGraus = resultDirecao;
+
+    this.x =  this.x + ((resultVelocidade*Math.cos(resultDirecao*(Math.PI/180)))*(delta/1000));
+    this.y =  this.y + ((resultVelocidade*Math.sin(-resultDirecao*(Math.PI/180)))*(delta/1000));
+    this.cx = this.x + this.r;
+    this.cy = this.y + this.r;
 };
 
 var objetoCirculo = function (r,figura){
@@ -198,8 +215,8 @@ var objetoCirculo = function (r,figura){
     results.r = r;
     results.h = 2*r;
     results.w = 2*r;
-    results.cx = results.x+r;
-    results.cy = results.y+r;
+    results.cx = this.x+r;
+    results.cy = this.y+r;
     results.velocidade = 1.0;
     results.direcaoGraus = 0.0;
     results.posInicialX = -50;
@@ -265,8 +282,11 @@ var objetoCirculo = function (r,figura){
           console.log("nda");
           max = max -1;
         }
+
         this.x =  this.x + ((resultVelocidade*Math.cos(resultDirecao*(Math.PI/180)))*(delta/1000));
         this.y =  this.y + ((resultVelocidade*Math.sin(-resultDirecao*(Math.PI/180)))*(delta/1000));
+        this.cx = this.x + this.w/2;
+        this.cy = this.y + this.h/2;
 
         //fazendo gravidade para ver como fica...Fim
 
@@ -284,6 +304,8 @@ var objetoCirculo = function (r,figura){
 	    results.y = -50;
 	    results.w = w;
 	    results.h = h;
+        results.cx = -50//this.x+(w/2);
+        results.cy = -50//this.y+(h/2);
 	    results.velocidade = 1.0;
 	    results.direcaoGraus = 0.0;
 	    results.posInicialX = -50;
@@ -299,6 +321,23 @@ var objetoCirculo = function (r,figura){
 	//Fim objeto retangular..
 
 	};
+
+
+
+    function reflexaoCirculos (circA,circB)//pode ficar cada vez menos fiel o quao rapido estiver se movendo
+    {
+        vetNovo = [circA.cx-circB.cx , circA.cy-circB.cy];//novo ou linha entre os dois objetos
+
+        anguloNovo = ((Math.atan2(vetNovo[1],vetNovo[0]))+Math.PI/2)*(180/Math.PI);//vetor normal u mais ou menos isso
+        vetNormal = [-vetNovo[1],vetNovo[0]];
+        angReflexA = (-(circA.direcaoGraus - anguloNovo)+180)%360;
+        angReflexB = (-(circB.direcaoGraus - anguloNovo)+180)%360;
+
+        return [angReflexA,angReflexB];
+    }
+
+
+
 
     function colisaoSimplesRetangulo(listaObjs)
     {
@@ -346,11 +385,17 @@ var objetoCirculo = function (r,figura){
     	    {
     	        if(i==j){continue;}
     	        if(contains.call(listaPula,''+j+''+i)){continue;}
-    	        if ( (listaObjs[j].cx-listaObjs[i].cx)^2 + (listaObjs[j].cy-listaObjs[i].cy)^2 <= (listaObjs[j].r-listaObjs[i].r)^2 )
+
+    	        if ( ((listaObjs[j].cx-listaObjs[i].cx)^2 + (listaObjs[j].cy-listaObjs[i].cy)^2) <= ((listaObjs[j].r+listaObjs[i].r)^2) )
                 {
     	            listaColisoes.push([listaObjs[i],listaObjs[j]]);
-    	            novaDirecao.push([(Math.atan2((listaObjs[j].cy-listaObjs[i].cy),(listaObjs[j].cx-listaObjs[i].cx)))*(180/Math.PI)]);
+                    //novas direcoes
+                    var res = reflexaoCirculos(listaObjs[i],listaObjs[j]);
+                    listaObjs[i].direcaoGraus = res[0];
+                    listaObjs[j].direcaoGraus = res[1];
     	            listaPula.push(''+i+''+j);
+                    conf = true;
+                    //alert("alabama 4"+res);
     	        }
             }
         }
@@ -417,19 +462,28 @@ var objetoCirculo = function (r,figura){
         mouseDown=1;
 		    aleatorioPressMouse = Math.ceil(Math.random()*6)-1;
         //drawDot(context,mouseX,mouseY,12);
-        var Azul = objetoRet(30,30,nomePng[aleatorioPressMouse]);
-        Azul.direcaoGraus = 91;
-        Azul.x = mouseX;
-  	    Azul.y = mouseY;
-        Azul.carregaImg(context);
-        listaDeObjs.push(Azul);
+        //var Azul = objetoRet(30,30,nomePng[aleatorioPressMouse]);
+        var circ1 = objetoCirculo(15,"src/circulo.png");
+        //Azul.direcaoGraus = 91;
+        //Azul.x = mouseX;
+  	    //Azul.y = mouseY;
+        circ1.x = mouseX;
+        circ1.y = mouseY;
+        //Azul.carregaImg(context);
+        circ1.carregaImg(context);
+        //listaDeObjs.push(Azul);
+        listaDeObjs.push(circ1);
+        listaDeCirculos.push(circ1);
         totalObjs = totalObjs+1;
-        if (totalObjs > maxObjs)
+        totalCirculos = totalCirculos+1;
+        if (totalObjs > maxObjs || totalCirculos > maxObjs)
         {
   			    listaDeObjs.shift();//remove o primeiro elemento
+                listaDeCirculos.shift();
   			    totalObjs = totalObjs-1;
-  		  }
-
+                totalCirculos = totalCirculos-1;
+  		}
+        alert(" m "+ circ1);
     }
 
 	var nomePng = ['src/Azul.png','src/Amarelo.png','src/Vermelho.png','src/Verde.png', 'src/Roxo.png','src/Laranja.png'];
@@ -595,6 +649,7 @@ var objetoCirculo = function (r,figura){
 	var tamanhoCanvasBgH = 0;
 	var tamanhoCanvasBgW = 0;
 	var totalObjs = 0;
+    var totalCirculos = 0;
 	var maxObjs = 20;
 
 	function init ()
@@ -654,6 +709,7 @@ var objetoCirculo = function (r,figura){
 
       colisaoTelaResult = colisaoSimplesTela(listaDeObjs,tamanhoCanvasFgW,tamanhoCanvasFgH);
       objTocadoResult = tocouObj(listaDeObjs,dedo);
+      resultColisaoCirculos = colisaoSimplesCirculo(listaDeObjs);
 
       if (objTocadoResult[0])//toque dos dedos
       {
@@ -711,7 +767,8 @@ var objetoCirculo = function (r,figura){
       {
 		listaDeObjs[i].move(delta)
 
-		 if (imgsCarregadasRet){// && imgsCarregadasCirculo){
+		 //if (imgsCarregadasRet){// && imgsCarregadasCirculo){
+         if (imgsCarregadasCirculo){
              context.drawImage(listaDeObjs[i].img,listaDeObjs[i].x,listaDeObjs[i].y,listaDeObjs[i].w,listaDeObjs[i].h);
          }
 		 i++;
