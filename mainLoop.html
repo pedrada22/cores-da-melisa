@@ -188,7 +188,8 @@ objetoCirculoMethod.move = function(delta)//movimento de formiguinhas.
 {
     //this.x =  this.x + ((this.velocidade*Math.cos(this.direcaoGraus*(Math.PI/180)))*(delta/1000));
     //this.y =  this.y + ((this.velocidade*Math.sin(-this.direcaoGraus*(Math.PI/180)))*(delta/1000));
-
+    this.prevFrameX = this.x;
+    this.prevFrameY = this.y;
     var vecX = this.velocidade*Math.cos(this.direcaoGraus*(Math.PI/180));
     var vecY = this.velocidade*Math.sin(this.direcaoGraus*(Math.PI/180));
     var gravVecX = grav.intencidade*Math.cos(grav.direcaoGraus*(Math.PI/180));
@@ -210,22 +211,26 @@ var objetoCirculo = function (r,figura){
 
     var results = {};
     results.img = new Image();
-    results.x = -50;
-    results.y = -50;
-    results.r = r;
-    results.h = 2*r;
-    results.w = 2*r;
-    results.cx = this.x+r;
-    results.cy = this.y+r;
+    results.x = -50.0;
+    results.y = -50.0;
+    results.r = parseFloat(r);
+    results.h = parseFloat(2*r);
+    results.w = parseFloat(2*r);
+    results.cx = parseFloat(results.x+r);
+    results.cy = parseFloat(results.y+r);
     results.velocidade = 1.0;
     results.direcaoGraus = 0.0;
-    results.posInicialX = -50;
-    results.posInicialY = -50;
+    results.posInicialX = -50.0;
+    results.posInicialY = -50.0;
     results.peso = 0.001;
     results.figura = figura;//'file:///C:/Repositorios/TowerDefenseCanvasClassic/indv.png';
     results.carregaImg = objetoCirculoMethod.carregaImg;
     results.move = objetoCirculoMethod.move;
     results.txtLivre = '';
+
+    results.prevFrameX = -50.0;
+    results.prevFrameY = -50.0;
+
     return results;
 };
 //#####################################################CIRCULO!!!!!!!FIM
@@ -256,6 +261,7 @@ var objetoCirculo = function (r,figura){
 	objetoRetMethod.move = function(delta)//movimento de formiguinhas.
 	{
         //fazendo gravidade para ver como fica...INICIO
+
         var vecX = this.velocidade*Math.cos(this.direcaoGraus*(Math.PI/180));
         var vecY = this.velocidade*Math.sin(this.direcaoGraus*(Math.PI/180));
         var gravVecX = grav.intencidade*Math.cos(grav.direcaoGraus*(Math.PI/180));
@@ -386,13 +392,22 @@ var objetoCirculo = function (r,figura){
     	        if(i==j){continue;}
     	        if(contains.call(listaPula,''+j+''+i)){continue;}
 
-    	        if ( ((listaObjs[j].cx-listaObjs[i].cx)^2 + (listaObjs[j].cy-listaObjs[i].cy)^2) <= ((listaObjs[j].r+listaObjs[i].r)^2) )
+                var tam1 = parseFloat((listaObjs[j].cx-listaObjs[i].cx)*(listaObjs[j].cx-listaObjs[i].cx) + (listaObjs[j].cy-listaObjs[i].cy)*(listaObjs[j].cy-listaObjs[i].cy));
+                var dist1 = parseFloat((listaObjs[j].r+listaObjs[i].r)*(listaObjs[j].r+listaObjs[i].r));
+
+    	        if ( tam1 <= dist1 )
                 {
+                    //alert(tam1+" "+dist1);
+                    //alert(Math.sqrt(tam1)+" "+Math.sqrt(dist1));
     	            listaColisoes.push([listaObjs[i],listaObjs[j]]);
                     //novas direcoes
                     var res = reflexaoCirculos(listaObjs[i],listaObjs[j]);
                     listaObjs[i].direcaoGraus = res[0];
                     listaObjs[j].direcaoGraus = res[1];
+                    listaObjs[i].x = listaObjs[i].prevFrameX;
+                    listaObjs[i].y = listaObjs[i].prevFrameY;
+                    listaObjs[j].x = listaObjs[j].prevFrameX;
+                    listaObjs[j].y = listaObjs[j].prevFrameY;
     	            listaPula.push(''+i+''+j);
                     conf = true;
                     //alert("alabama 4"+res);
@@ -483,7 +498,7 @@ var objetoCirculo = function (r,figura){
   			    totalObjs = totalObjs-1;
                 totalCirculos = totalCirculos-1;
   		}
-        alert(" m "+ circ1);
+        //alert(" m "+ circ1);
     }
 
 	var nomePng = ['src/Azul.png','src/Amarelo.png','src/Vermelho.png','src/Verde.png', 'src/Roxo.png','src/Laranja.png'];
