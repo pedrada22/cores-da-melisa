@@ -35,6 +35,7 @@ export function objTouch()
 }
 
 
+
 // function tocouObj(listaObjs,objetoTouch)//da forma que esta o unico objeto retornado eh o ultimo que for desenhado
 // {    // isso implica em passar uma listaObjs ordenada por ordem de desenho sendo que o ultimo desenhado eh o ultimo da lista.
 //     offset=0//serve para prover um gap

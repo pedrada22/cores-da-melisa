@@ -56,7 +56,7 @@
     }
 
 	//var global	//var global	//var global	//var global	//var global	//var global	//var global
-	var dedo = objTouch();
+	var dedo =  objTouch();
 	var touchX = 0;
 	var touchY = 0;
 	var mouseX,mouseY,mouseDown=0;
