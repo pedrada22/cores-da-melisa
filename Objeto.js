@@ -9,30 +9,30 @@
 //     this.velocidade =  (Math.sqrt((this.x-this.posInicialX)*(this.x-this.posInicialX) +(this.y-this.posInicialY)*(this.y-this.posInicialY)))/((Date.now() - this.touchStartTime)/1000);
 // };
 
-export function objTouch()
-{
-    var results = {};
-    results.naTela = false;
-    results.x = 0;
-    results.y = 0;
-    results.h = 5;
-    results.w = 5;
-    results.velocidade = 0.0;
-    results.direcaoGraus = 0.0;
-    results.touchStartTime=0.0;
-    results.posInicialX = -50;
-    results.posInicialY = -50;
-    results.previousTouchTime = 0.0;
-    results.posAnteriorX = -50;
-    results.posAnteriorY = -50;
+// export function objTouch()
+// {
+//     var results = {};
+//     results.naTela = false;
+//     results.x = 0;
+//     results.y = 0;
+//     results.h = 5;
+//     results.w = 5;
+//     results.velocidade = 0.0;
+//     results.direcaoGraus = 0.0;
+//     results.touchStartTime=0.0;
+//     results.posInicialX = -50;
+//     results.posInicialY = -50;
+//     results.previousTouchTime = 0.0;
+//     results.posAnteriorX = -50;
+//     results.posAnteriorY = -50;
 
-    results.updateDirVel = () => {
-        results.direcaoGraus =  (Math.atan2((-results.posInicialY+results.y),(-results.posInicialX+results.x)))*(180/Math.PI);
-        results.velocidade =  (Math.sqrt((results.x-results.posInicialX)*(results.x-results.posInicialX) +(results.y-results.posInicialY)*(results.y-results.posInicialY)))/((Date.now() - results.touchStartTime)/1000);
-    }
+//     results.updateDirVel = () => {
+//         results.direcaoGraus =  (Math.atan2((-results.posInicialY+results.y),(-results.posInicialX+results.x)))*(180/Math.PI);
+//         results.velocidade =  (Math.sqrt((results.x-results.posInicialX)*(results.x-results.posInicialX) +(results.y-results.posInicialY)*(results.y-results.posInicialY)))/((Date.now() - results.touchStartTime)/1000);
+//     }
 
-    return results;
-}
+//     return results;
+// }
 
 
 
@@ -56,3 +56,33 @@ export function objTouch()
 //     }
 //     return [conf,listaColisoes]
 // }
+
+
+
+
+
+    
+class objTouch {
+    constructor(){
+        this.naTela = false;
+        this.x = 0;
+        this.y = 0;
+        this.h = 5;
+        this.w = 5;
+        this.velocidade = 0.0;
+        this.direcaoGraus = 0.0;
+        this.touchStartTime=0.0;
+        this.posInicialX = -50;
+        this.posInicialY = -50;
+        this.previousTouchTime = 0.0;
+        this.posAnteriorX = -50;
+        this.posAnteriorY = -50;
+    }
+
+    updateDirVel() {
+        this.direcaoGraus =  (Math.atan2((-this.posInicialY+y),(-this.posInicialX+x)))*(180/Math.PI);
+        this.velocidade =  (Math.sqrt((this.x-this.posInicialX)*(this.x-this.posInicialX) +(this.y-this.posInicialY)*(this.y-this.posInicialY)))/((Date.now() - this.touchStartTime)/1000);
+    }
+}
+
+export { objTouch} ;

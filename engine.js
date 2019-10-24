@@ -9,9 +9,10 @@
 	    this.velocidade =  (Math.sqrt((this.x-this.posInicialX)*(this.x-this.posInicialX) +(this.y-this.posInicialY)*(this.y-this.posInicialY)))/((Date.now() - this.touchStartTime)/1000);
 	};
 
-	objTouch = function ()
+	var objTouch =  () =>
 	{
-		var results = {};
+        var results = {};
+        
 		results.naTela = false;
 		results.x = 0;
 	    results.y = 0;
@@ -29,6 +30,28 @@
 	    results.updateDirVel = objetoTouchMethod.updateDirVel;
 	    return results;
     }
+    
+    // const objTouch = 
+	// {
+	// 	naTela : false,
+	// 	x : 0,
+	//     y : 0,
+	//     h : 5,
+	//     w : 5,
+	//     velocidade : 0.0,
+	//     direcaoGraus : 0.0,
+	//     touchStartTime:0.0,
+	//     posInicialX : -50,
+	//     posInicialY : -50,
+	//     previousTouchTime : 0.0,
+	//     posAnteriorX : -50,
+	//     posAnteriorY : -50,
+
+	//     updateDirVel : () => {
+    //         direcaoGraus =  (Math.atan2((-posInicialY+y),(-posInicialX+x)))*(180/Math.PI);
+    //         velocidade =  (Math.sqrt((x-posInicialX)*(x-posInicialX) +(y-posInicialY)*(y-posInicialY)))/((Date.now() - touchStartTime)/1000);
+    //     },
+    // };
     //object Objeto - END
 
 
@@ -55,8 +78,10 @@
         return [conf,listaColisoes]
     }
 
+    //import {objTouch} from './Objeto.js';
 	//var global	//var global	//var global	//var global	//var global	//var global	//var global
-	var dedo =  objTouch();
+	var dedo =   objTouch();
+	//var dedo =   new objTouch();
 	var touchX = 0;
 	var touchY = 0;
 	var mouseX,mouseY,mouseDown=0;
@@ -763,3 +788,8 @@ var objetoCirculo = function (r,figura){
     }
     //render();
 
+
+
+
+//HTML documents inserctions.
+window.onload = init();
